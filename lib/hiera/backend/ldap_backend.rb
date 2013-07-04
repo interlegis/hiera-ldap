@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'net/ldap'
+require 'iconv'
 
 # Monkey path Net::LDAP::Connection to ensure SSL certs aren't verified
 class Net::LDAP::Connection
@@ -37,6 +38,12 @@ class Hiera
       def lookup(key, scope, order_override, resolution_type)
         #answer = Backend.empty_answer(resolution_type)
         answer = nil
+
+	#Converts string from UTF8 to LATIN1 to escape special characters for Active Directory	
+        key = Iconv.conv("LATIN1", "UTF8", key)
+	#Escape special characters with their respective ASCII Extended Codes
+        key = key.gsub(/[^\x00-\x7F]/n) { |s| '\\' + s[0].to_s(16).capitalize }
+
 
         Hiera.debug("Looking up #{key} in LDAP backend")
 

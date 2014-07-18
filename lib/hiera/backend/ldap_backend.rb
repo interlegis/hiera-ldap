@@ -55,29 +55,36 @@ class Hiera
         end
       end
 
+      ## This function does standard ldap Lookup
+      def ldapSearchLookup(key) 
+        answer = []
+        filter = Net::LDAP::Filter.from_rfc4515(key)
+        conf = Config[:ldap] 
+        treebase = conf[:base]
+        Hiera.debug("Searching #{key} in LDAP backend, base #{treebase}.")
+        searchresult = @connection.search(:filter => filter)
+
+        for i in 0..searchresult.length-1 do
+          answer[i] = {}
+          searchresult[i].each do |attribute, values|
+            Hiera.debug( " #{attribute}:")
+            answer[i][attribute.to_s] = values
+            values.each do |value|
+              Hiera.debug( " ---->#{value}:")
+            end
+          end
+        end
+        return answer
+      end
+ 
 
       def lookup(key, scope, order_override, resolution_type)
         conf = Config[:ldap] 
 
         # Testing if the key is an arbitrary LDAP Search key
         if key.split('')[0] == '(' and key.split('')[key.length-1] == ')'
-          answer = []
-          filter = Net::LDAP::Filter.from_rfc4515(key)
-          treebase = conf[:base]
-          Hiera.debug("Searching #{key} in LDAP backend, base #{treebase}.")
-          searchresult = @connection.search(:filter => filter)
-
-          for i in 0..searchresult.length-1 do
-            answer[i] = {}
-            searchresult[i].each do |attribute, values|
-              Hiera.debug( " #{attribute}:")
-              answer[i][attribute.to_s] = values
-              values.each do |value|
-                Hiera.debug( " ---->#{value}:")
-              end
-            end
-          end
-	  return answer unless answer == []
+	  answer = ldapSearchLookup(key)
+          return answer unless answer == []
         
         # "Key" is an ordinary puppet variable
         else

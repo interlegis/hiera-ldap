@@ -37,7 +37,7 @@ class Hiera
         @base = conf[:base]
 
         Hiera.debug("Hiera LDAP backend starting")
-        @searchattr = get_config_value(:attribute, "puppetVar")
+        @searchattr = get_config_value(:attribute, "puppetvar")
         @connection = Net::LDAP.new(
           :host       => conf[:host],
           :port       => get_config_value(:port, "389"),
@@ -97,13 +97,10 @@ class Hiera
             Hiera.debug("Searching on base: #{base}")
             begin
               filterstr = "(&(objectClass=puppetClient)(cn=#{source}))"
-              filter = Net::LDAP::Filter.from_rfc4515(filterstr)
-              treebase = conf[:base]
-              searchresult = @connection.search(:filter => filter)
-
+              searchresult = ldapSearchLookup(filterstr)
 
               searchresult.each do |entry|
-                if entry[@searchattr] != []
+                if entry[@searchattr] != {}
                   Hiera.debug("Entry #{entry['cn']} has key #{@searchattr}: '#{entry[@searchattr]}'")
                   # Now we do have hiera data, let's see if the key we're looking for is here.
                   entry[@searchattr].each do |line|

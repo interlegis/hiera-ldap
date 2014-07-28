@@ -37,7 +37,7 @@ class Hiera
         @base = conf[:base]
 
         Hiera.debug("Hiera LDAP backend starting")
-        @searchattr = get_config_value(:attribute, "puppetvar")
+        @searchattr = get_config_value(:attribute, "puppetVar").downcase
         @connection = Net::LDAP.new(
           :host       => conf[:host],
           :port       => get_config_value(:port, "389"),
@@ -100,7 +100,7 @@ class Hiera
               searchresult = ldapSearchLookup(filterstr)
 
               searchresult.each do |entry|
-                if entry[@searchattr] != {}
+                if entry[@searchattr] != []
                   Hiera.debug("Entry #{entry['cn']} has key #{@searchattr}: '#{entry[@searchattr]}'")
                   # Now we do have hiera data, let's see if the key we're looking for is here.
                   entry[@searchattr].each do |line|
@@ -145,7 +145,7 @@ class Hiera
                 end #end if entry[@searchattr] != []
 
                 if answer == [] 
-                   k = key.rpartition("::").last 
+                   k = key.rpartition("::").last.downcase 
                    Hiera.debug("Entry #{key} not found in #{@searchattr} key. Looking up for key #{k}.")
                    entry[k].each do |line|
                      # Construct response

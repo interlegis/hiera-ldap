@@ -118,7 +118,18 @@ class Hiera
                       if v.valid_json?
 	                v = JSON.parse(v)
                       end
-                    
+                      
+                      # Testing if the value is an arbitrary LDAP Search key
+                      if v[0] == '(' and v[v.length-1] == ')'
+                        Hiera.debug("Value #{v} from key #{k} is an LDAP Search. Searching LDAP...")
+                        result = ldapSearchLookup(v)
+                        if result != [] 
+                          v = result
+                        else
+                          Hiera.debug("LDAP Search #{v} returned no results.")
+                        end
+                      end 
+                       
   		      # Construct response
                       if answer
                         if answer.is_a? String

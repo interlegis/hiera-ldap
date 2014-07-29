@@ -100,7 +100,7 @@ class Hiera
               searchresult = ldapSearchLookup(filterstr)
 
               searchresult.each do |entry|
-                if entry[@searchattr] != []
+                if entry[@searchattr].kind_of?(Array)
                   Hiera.debug("Entry #{entry['cn']} has key #{@searchattr}: '#{entry[@searchattr]}'")
                   # Now we do have hiera data, let's see if the key we're looking for is here.
                   entry[@searchattr].each do |line|

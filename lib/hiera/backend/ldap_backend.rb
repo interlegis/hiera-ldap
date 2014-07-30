@@ -84,7 +84,11 @@ class Hiera
         # Testing if the key is an arbitrary LDAP Search key
         if key.split('')[0] == '(' and key.split('')[key.length-1] == ')'
 	  answer = ldapSearchLookup(key)
-          return answer unless answer == []
+          if resolution_type == :hash
+            return Hash[answer.each_with_index.map { |value, index| [index, value] }] unless answer == []
+          else
+            return answer unless answer == [] 
+          end
         
         # "Key" is an ordinary puppet variable
         else
@@ -165,7 +169,11 @@ class Hiera
               end #end searchresult.each
             end #end datasources begin
           end #end datasources
-          return answer unless answer == []
+          if resolution_type == :hash  
+            return Hash[answer.each_with_index.map { |value, index| [index, value] }] unless answer == []
+          else
+            return answer unless answer == []
+          end
         end #end else
       rescue Exception => e
             Hiera.debug("Exception: #{e}")
